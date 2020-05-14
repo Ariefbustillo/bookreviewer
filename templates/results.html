@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+    <head>
+        <title>Book Reviewer</title>
+    </head>
+    <body>
+        Results:
+        <table>
+            <tr>
+                <td>IBSN#</td>
+                <td>Title</td></a>
+                <td>Author</td>
+                <td>Publication Year</td>
+            </tr>
+            {% for result in results %}
+
+            <tr>
+                <td>{{result.isbn}}</td>
+                <td><a href="{{url_for('books',ibsn=result.isbn)}}">
+                    {{result.title}}
+                </a></td>
+                <td>{{result.author}}</td>
+                <td>{{result.pub_year}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>
