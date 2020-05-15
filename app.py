@@ -2,7 +2,7 @@ import os
 import requests
 from mod import db, Base, Reviews, Users, Books
 
-from flask import Flask, session, render_template, request,redirect, url_for
+from flask import Flask, session, render_template, request,redirect, url_for, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -130,3 +130,30 @@ def review():
     db.add(review)
     db.commit()
     return redirect(url_for('books', isbn=isbn))
+
+@app.route("/api/<isbn>",methods=['get'])
+def api(isbn):
+    #Get book and review information
+    book_info = db.query(Books).filter(Books.isbn==isbn).one()
+    last_review = db.query(Reviews).filter(Reviews.isbn == isbn).order_by(Reviews.id.desc()).first()
+    reviews_info = db.query(Reviews).filter(Reviews.isbn == isbn).all()
+
+    #if no reviews have been made
+    if len(reviews_info) < 1:
+        review_count="No Reviews"
+        average_score="N/A"
+        return jsonify(title=book_info.title, author=book_info.author, year=book_info.pub_year, isbn=book_info.isbn, review_count=review_count, average_score=average_score)
+
+    #Use id of last review to count reviews
+    review_count = last_review.id
+
+    #Find average book rating
+    average_score = 0
+    for review_info in reviews_info:
+        average_score += review_info.rating
+    average_score /= review_count
+
+    #Return JSON
+    return jsonify(title=book_info.title, author=book_info.author, year=book_info.pub_year, isbn=book_info.isbn, review_count=review_count, average_score=average_score)
+
+
