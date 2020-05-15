@@ -1,29 +1,35 @@
-<!DOCTYPE html>
-    <head>
-        <title>Book Reviewer</title>
-    </head>
-    <body>
-        <h1>{{book_info.title}}</h1>
-        <table>
-            <tr>
-                <td>ISBN#</td>
-                <td>Title</td></a>
-                <td>Author</td>
-                <td>Publication Year</td>
-                <td>Goodreads Rating</td>
-                <td>Goodreads Number of Reviews:</td>
-            </tr>
-            <tr>
-                <td>{{book_info.isbn}}</td>
-                
-                <td>{{book_info.title}}</td>
-                
-                <td>{{book_info.author}}</td>
-                <td>{{book_info.pub_year}}</td>
-                <td>{{ avg_rating }}</td>
-                <td>{{ ratings_count }}</td>
-            </tr>
-        </table>
+{% extends "layout.html" %}
+{% block content %}
+        <h2>{{book_info.title}}</h2>
+        <div class="book_infos">
+
+            <box class="a">
+            ISBN#: </br>
+            {{book_info.isbn}}
+            </box>
+            <box class="b">
+            Title:</br>
+            {{book_info.title}}
+            </box>
+            <box class="c">
+            Author:   </br>
+            {{book_info.author}}
+            </box>
+
+            
+            <box class="a">
+                Publication Year</br>
+                {{book_info.pub_year}}
+            </box>
+            <box class="b">
+                Goodreads Rating:</br>
+                {{ avg_rating }}
+            </box>
+            <box class="c">
+                Goodreads Number of Reviews::</br>
+                {{ ratings_count }}
+            </box>
+        </div>
         
         <div class="reviews">
             Reviews: </br>
@@ -38,11 +44,10 @@
         <div class="review">
             Write a review: 
             <form action="/review" method="post">
-                <textarea name="content" id="content">Enter review here..</textarea>
+                <textarea class="review_text"name="content" id="content" placeholder="Enter review here..."></textarea>
                 <input type="number" id="rating" placeholder="0-5" name="rating">
                 <input type="hidden" value="{{book_info.isbn}}" id="isbn" name="isbn">
                 <input type="submit">
             </form>
         </div>
-    </body>
-</html>
+{% endblock %}

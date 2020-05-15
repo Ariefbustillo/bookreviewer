@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles.css') }}">
+    <title>Bookreviewer</title>
+</head>
+<body>
+    <nav>
+        <img class="icon" src="/static/book.svg">
+        <h1>Bookreviewer</h1>
+
+        <form class="search" action="/search" method="post">
+            <input class="searchbar" type="text" name="q" placeholder="Search.." id="q">
+            <input class="searchbutton" type="submit" value="Search">
+        </form>
+
+        <form class="logout" action="/logout">
+            <input class="searchbutton" type="submit" value="logout">
+        </form>
+    </nav>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

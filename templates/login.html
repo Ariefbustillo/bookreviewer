@@ -1,24 +1,26 @@
-<!DOCTYPE html>
+<!DOCTYPE html style="height:100%;">
     <head>
         <title>Log In Book Reviewer</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles.css') }}">
     </head>
-    <body>
+    <body class="form">
         <div class="main">
             <form id="login" action="/login" method="post">
-                <h2>Please Enter Username and Password</h2>
+                <h3>Please Enter Username and Password</h3>
                 <div class="username">
                     <label id="username">Username:</label>
                     <input required id="username" type="text" name="username" placeholder="Username"></br>
                 </div>
                 <div class="password">
-                    <label id="password">Password</label>
+                    <label id="password">Password:  </label>
                     <input required id="password" type="password" placeholder="Password" name="password"></br>
                 </div>
-                <input type="submit" name="submit" value="Enter" class="submit-btn" >
+                <input type="submit" name="submit" value="Enter" class="searchbutton" >
             </form>
         </br> OR </br> </br>
             <a class="create_account" href="/to_create_account">
-                <button  class="submit-btn">Create Account</button>
+                <button  class="searchbutton">Create Account</button>
             </a>
         </div>
     </body>
+    </html>
