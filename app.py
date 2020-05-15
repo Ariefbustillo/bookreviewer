@@ -1,9 +1,9 @@
 import os
-from mod import *
+from mod import db, Base, Reviews, Users, Books
 
-from flask import Flask, session, render_template, request
+from flask import Flask, session, render_template, request,redirect, url_for
 from flask_session import Session
-from sqlalchemy import create_engine, or_
+from sqlalchemy import create_engine, or_, and_
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 app = Flask(__name__)
@@ -28,10 +28,9 @@ app.secret_key = '7djf6s9dj03'
 # Base.metadata.create_all(engine)
 @app.route("/")
 def index():
-    if session['logged_in'] == False:
+    if session['logged_in'] is False:
         print("Not there")
-        session['user_id'] = ''
-        session['logged_in'] = False
+        session['user_id'] = None
         return render_template("login.html")
     print(session['user_id'])
     return render_template("index.html")
@@ -93,4 +92,28 @@ def search():
 def books(ibsn):
     # ibsn = request.args.get("ibsn")
     book_info = db.query(Books).filter(Books.isbn == ibsn).one()
-    return render_template("book_info.html", book_info=book_info)
+    reviews = db.query(Reviews, Users).filter(and_(Reviews.isbn == ibsn, Reviews.user_id == Users.id)).all()
+
+    return render_template("book_info.html", book_info=book_info, reviews=reviews)
+
+@app.route("/review", methods=["post"])
+def review():
+    content = request.form.get("content")
+    ibsn = request.form.get("ibsn")
+    rating = request.form.get("rating")
+    last_review = db.query(Reviews).order_by(Reviews.id.desc()).first()
+    #Checks if user has review already
+
+    if len(db.query(Reviews).filter(and_(Reviews.user_id == session['user_id'], Reviews.isbn == ibsn)).all()) > 0:
+        print(db.query(Reviews).filter(and_(Reviews.user_id == session['user_id'], Reviews.isbn == ibsn)).all())
+        return "You may not submit two reviews for the same book"
+
+    #Checks if this is the first review in system, autoincrements review id
+    if last_review is None:
+        review = Reviews(id = 1, isbn=ibsn,review=content, rating=rating, user_id=session['user_id'])
+    else:
+        review = Reviews(id=last_review.id + 1, isbn=ibsn, review=content, rating=rating, user_id=session['user_id'])
+    #add review to database   
+    db.add(review)
+    db.commit()
+    return redirect(url_for('books', ibsn=ibsn))

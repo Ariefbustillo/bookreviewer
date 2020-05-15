@@ -18,6 +18,7 @@ class Books(Base):
 class Reviews(Base):
     __tablename__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     isbn = db.Column(db.String, db.ForeignKey("books.isbn"), nullable=False)
     rating = db.Column(db.Float, nullable=False)
     review = db.Column(db.String, nullable=False)

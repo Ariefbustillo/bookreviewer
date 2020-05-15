@@ -20,5 +20,25 @@
                 <td>{{book_info.pub_year}}</td>
             </tr>
         </table>
+        
+        <div class="reviews">
+            Reviews: </br>
+            {% for review,user in reviews %}
+            {{ user.username}}
+            {{ review.review }}
+        </br>
+            {% endfor %}
+        </div>
+    </br>
+
+        <div class="review">
+            Write a review: 
+            <form action="/review" method="post">
+                <textarea name="content" id="content">Enter review here..</textarea>
+                <input type="number" id="rating" placeholder="0-5" name="rating">
+                <input type="hidden" value="{{book_info.isbn}}" id="ibsn" name="ibsn">
+                <input type="submit">
+            </form>
+        </div>
     </body>
 </html>
