@@ -6,7 +6,7 @@
         Results:
         <table>
             <tr>
-                <td>IBSN#</td>
+                <td>ISBN#</td>
                 <td>Title</td></a>
                 <td>Author</td>
                 <td>Publication Year</td>
@@ -15,7 +15,7 @@
 
             <tr>
                 <td>{{result.isbn}}</td>
-                <td><a href="{{url_for('books',ibsn=result.isbn)}}">
+                <td><a href="{{url_for('books',isbn=result.isbn)}}">
                     {{result.title}}
                 </a></td>
                 <td>{{result.author}}</td>

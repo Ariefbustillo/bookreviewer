@@ -1,4 +1,5 @@
 import os
+import requests
 from mod import db, Base, Reviews, Users, Books
 
 from flask import Flask, session, render_template, request,redirect, url_for
@@ -26,44 +27,44 @@ app.secret_key = '7djf6s9dj03'
 
 # Create Tables
 # Base.metadata.create_all(engine)
+
+
+#Home page, to login if not logged in
 @app.route("/")
-def index():
+def index():  
     if session['logged_in'] is False:
-        print("Not there")
         session['user_id'] = None
         return render_template("login.html")
-    print(session['user_id'])
     return render_template("index.html")
 
+#Logs out
 @app.route("/logout")
 def logout():
     session['user_id'] = None
     session['logged_in'] = False
     return render_template("login.html")
 
+#Links to account creation
 @app.route("/to_create_account")
 def to_create_account():
     return render_template("create_account.html")
 
+#Login, set session values
 @app.route("/login", methods=["post"])
 def login():
     username = request.form.get("username")
     password = request.form.get("password")
     users = db.query(Users).all()
     for user in users:
-        print(user.password)
-        print(password)
-        print(user.username)
-        print(username)
-        print(user.id)
         if user.username == username:
             if password == user.password:
                 session['user_id'] = user.id
                 session['logged_in'] = True
                 print(user.id)
                 return render_template("index.html")
-    return ("Nope")
+    return("Username and Password Do Not Match")
 
+#Create account
 @app.route("/create_account",methods=['post'])
 def create_account():
     username = request.form.get("username")
@@ -75,12 +76,13 @@ def create_account():
     db.commit()
     return render_template("login.html")
 
-
+#Search page
 @app.route("/search", methods=["post"])
 def search():
+    #get search results
     q = request.form.get("q")
-    print(q)
     results = db.query(Books).filter(or_(Books.title.like(f"%{q}%"),Books.author.like(f"%{q}%"), Books.isbn == q)).all()
+
     # print(results)
     if len(results) >= 1:
         return render_template("results.html", results=results)
@@ -88,32 +90,43 @@ def search():
         return "No results found."
 
 
-@app.route("/books/<ibsn>", methods=["get", "post"])
-def books(ibsn):
-    # ibsn = request.args.get("ibsn")
-    book_info = db.query(Books).filter(Books.isbn == ibsn).one()
-    reviews = db.query(Reviews, Users).filter(and_(Reviews.isbn == ibsn, Reviews.user_id == Users.id)).all()
+#Show book info page
+@app.route("/books/<isbn>", methods=["get", "post"])
+def books(isbn):
+    #get book info from database
+    book_info = db.query(Books).filter(Books.isbn == isbn).one()
 
-    return render_template("book_info.html", book_info=book_info, reviews=reviews)
+    #get Goodreads book info
+    goodreads_info = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "ShHaN0gMAt2QQUQJsLzTRA", "isbns": f"{isbn}"}).json()
+    avg_rating = (goodreads_info.get('books')[0].get('average_rating'))
+    ratings_count = (goodreads_info.get('books')[0].get('ratings_count'))
 
+    #get reviews from database
+    reviews = db.query(Reviews, Users).filter(and_(Reviews.isbn == isbn, Reviews.user_id == Users.id)).all()
+
+    return render_template("book_info.html", book_info=book_info, reviews=reviews, avg_rating=avg_rating, ratings_count=ratings_count)
+
+
+#Adds review to databse
 @app.route("/review", methods=["post"])
 def review():
     content = request.form.get("content")
-    ibsn = request.form.get("ibsn")
+    isbn = request.form.get("isbn")
     rating = request.form.get("rating")
     last_review = db.query(Reviews).order_by(Reviews.id.desc()).first()
-    #Checks if user has review already
 
-    if len(db.query(Reviews).filter(and_(Reviews.user_id == session['user_id'], Reviews.isbn == ibsn)).all()) > 0:
-        print(db.query(Reviews).filter(and_(Reviews.user_id == session['user_id'], Reviews.isbn == ibsn)).all())
+    #Checks if user has review already
+    if len(db.query(Reviews).filter(and_(Reviews.user_id == session['user_id'], Reviews.isbn == isbn)).all()) > 0:
+        print(db.query(Reviews).filter(and_(Reviews.user_id == session['user_id'], Reviews.isbn == isbn)).all())
         return "You may not submit two reviews for the same book"
 
     #Checks if this is the first review in system, autoincrements review id
     if last_review is None:
-        review = Reviews(id = 1, isbn=ibsn,review=content, rating=rating, user_id=session['user_id'])
+        review = Reviews(id = 1, isbn=isbn,review=content, rating=rating, user_id=session['user_id'])
     else:
-        review = Reviews(id=last_review.id + 1, isbn=ibsn, review=content, rating=rating, user_id=session['user_id'])
-    #add review to database   
+        review = Reviews(id=last_review.id + 1, isbn=isbn, review=content, rating=rating, user_id=session['user_id'])
+
+    #Add review to database   
     db.add(review)
     db.commit()
-    return redirect(url_for('books', ibsn=ibsn))
+    return redirect(url_for('books', isbn=isbn))

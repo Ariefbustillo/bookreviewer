@@ -6,10 +6,12 @@
         <h1>{{book_info.title}}</h1>
         <table>
             <tr>
-                <td>IBSN#</td>
+                <td>ISBN#</td>
                 <td>Title</td></a>
                 <td>Author</td>
                 <td>Publication Year</td>
+                <td>Goodreads Rating</td>
+                <td>Goodreads Number of Reviews:</td>
             </tr>
             <tr>
                 <td>{{book_info.isbn}}</td>
@@ -18,6 +20,8 @@
                 
                 <td>{{book_info.author}}</td>
                 <td>{{book_info.pub_year}}</td>
+                <td>{{ avg_rating }}</td>
+                <td>{{ ratings_count }}</td>
             </tr>
         </table>
         
@@ -36,7 +40,7 @@
             <form action="/review" method="post">
                 <textarea name="content" id="content">Enter review here..</textarea>
                 <input type="number" id="rating" placeholder="0-5" name="rating">
-                <input type="hidden" value="{{book_info.isbn}}" id="ibsn" name="ibsn">
+                <input type="hidden" value="{{book_info.isbn}}" id="isbn" name="isbn">
                 <input type="submit">
             </form>
         </div>

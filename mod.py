@@ -11,8 +11,6 @@ class Books(Base):
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String, nullable=False)
     pub_year = db.Column(db.Integer, nullable=False)
-    gr_rating = db.Column(db.Float, nullable=True)
-    gr_num_of_ratings = db.Column(db.Integer, nullable=True)
 
 
 class Reviews(Base):
