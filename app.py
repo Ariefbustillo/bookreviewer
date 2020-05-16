@@ -135,7 +135,6 @@ def review():
 def api(isbn):
     #Get book and review information
     book_info = db.query(Books).filter(Books.isbn==isbn).one()
-    last_review = db.query(Reviews).filter(Reviews.isbn == isbn).order_by(Reviews.id.desc()).first()
     reviews_info = db.query(Reviews).filter(Reviews.isbn == isbn).all()
 
     #if no reviews have been made
@@ -145,7 +144,7 @@ def api(isbn):
         return jsonify(title=book_info.title, author=book_info.author, year=book_info.pub_year, isbn=book_info.isbn, review_count=review_count, average_score=average_score)
 
     #Use id of last review to count reviews
-    review_count = last_review.id
+    review_count = len(reviews_info)
 
     #Find average book rating
     average_score = 0

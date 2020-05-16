@@ -64,6 +64,9 @@ h2{
     align-self:center;
     margin: 10px;
 }
+.icon:focus{
+    outline: none;
+}
 
 .results{
     grid-area: 2/1;
@@ -73,7 +76,8 @@ tr{
     height:30px;
 }
 table, td{
-    border: 1px solid black;
+    border: 1px solid white;
+    border-radius: 2px;
     border-collapse: collapse;
 }
 td{
@@ -141,4 +145,42 @@ box{
 }
 #password{
     margin-right: 5px;
+}
+.icon:hover{
+    transition:3s;
+    transform: rotate(360deg);
+}
+.range{
+    -webkit-appearance: none;
+    background-image: linear-gradient(270deg, green, rgb(236, 74, 74));
+    border-radius: 5px;
+}
+.range:focus{
+    outline:none;
+}
+.range::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 15px;
+    border-radius: 25%; 
+    background: white;
+    outline: skyblue;
+
+}
+.review_text{
+    width: 300px;
+    height: 75px;
+    border-radius: 5px;
+    background-image: linear-gradient(-45deg, skyblue,rgb(206, 235, 245));
+    outline: none;
+}
+.user_review{
+    border: 1px solid grey;
+    border-radius: 4px;
+    margin: 5px;
+    margin-left: 0;
+    padding: 5px;
+    width: 600px;
+    background-image: linear-gradient(-45deg, skyblue,rgb(206, 235, 245));
 }

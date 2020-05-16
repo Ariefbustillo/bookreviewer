@@ -34,9 +34,11 @@
         <div class="reviews">
             Reviews: </br>
             {% for review,user in reviews %}
-            {{ user.username}}
-            {{ review.review }}
-        </br>
+            <div class="user_review">
+                {{ user.username}}
+                {{ review.review }}
+                {{review.rating}}
+            </div>
             {% endfor %}
         </div>
     </br>
@@ -44,8 +46,9 @@
         <div class="review">
             Write a review: 
             <form action="/review" method="post">
-                <textarea class="review_text"name="content" id="content" placeholder="Enter review here..."></textarea>
-                <input type="number" id="rating" placeholder="0-5" name="rating">
+                <textarea class="review_text"name="content" id="content" placeholder="Enter review here..."></textarea></br>
+                <label id="rating">Rating:</label></br>
+                <input class="range" type="range" min="0" max="5" step=".5" id="rating" placeholder="0-5" name="rating">
                 <input type="hidden" value="{{book_info.isbn}}" id="isbn" name="isbn">
                 <input type="submit">
             </form>
