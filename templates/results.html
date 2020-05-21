@@ -1,25 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="results">
-        <h2>Results:</h2>
-        <table class="results">
-            <tr>
-                <td>ISBN#</td>
-                <td>Title</td></a>
-                <td>Author</td>
-                <td>Publication Year</td>
-            </tr>
-            {% for result in results %}
+<div class="results">
+    <h2>Results:</h2>
+    <table class="results">
+        <tr>
+            <td>ISBN#</td>
+            <td>Title</td></a>
+            <td>Author</td>
+            <td>Publication Year</td>
+        </tr>
+        {% for result in results %}
 
-            <tr>
-                <td>{{result.isbn}}</td>
-                <td><a href="{{url_for('books',isbn=result.isbn)}}">
+        <tr>
+            <td>{{result.isbn}}</td>
+            <td><a href="{{url_for('books',isbn=result.isbn)}}">
                     {{result.title}}
                 </a></td>
-                <td>{{result.author}}</td>
-                <td>{{result.pub_year}}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </div>
+            <td>{{result.author}}</td>
+            <td>{{result.pub_year}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 {% endblock %}
