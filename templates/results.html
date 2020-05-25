@@ -21,5 +21,17 @@
         </tr>
         {% endfor %}
     </table>
+
+    <div>
+
+        Page:
+        {% for x in range(pages) %}
+        <form action="/search" method="post">
+            <input type="hidden" value="{{q}}" id="q" name="q">
+            <input type="hidden" value="{{x + 1}}" id="page" name="page">
+            <input type="submit" class="pagination-button" value="{{x + 1}}">
+        </form>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

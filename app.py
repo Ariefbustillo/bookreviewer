@@ -5,10 +5,13 @@ from mod import db, Base, Reviews, Users, Books
 from flask import Flask, session, render_template, request, redirect, url_for, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine, or_, and_
-from sqlalchemy.orm import scoped_session, sessionmaker
+from flask_sqlalchemy import sqlalchemy, BaseQuery
+
+# from sqlalchemy.orm import scoped_session, sessionmaker
+
 
 app = Flask(__name__)
-goodread_key = "ShHaN0gMAt2QQUQJsLzTRA"
+goodread_key = os.getenv("GOODREAD_KEY")
 
 # Check for environment variablec
 if not os.getenv("DATABASE_URL"):
@@ -17,13 +20,15 @@ if not os.getenv("DATABASE_URL"):
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+# Session(app)
 
 # Set up database
-engine = create_engine(os.getenv("DATABASE_URL"))
-db = scoped_session(sessionmaker(bind=engine))
-
-app.secret_key = "7djf6s9dj03"
+# engine = create_engine(os.getenv("DATABASE_URL"))
+# db = sqlalchemy.orm.scoped_session(sqlalchemy.orm.sessionmaker(bind=engine))
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Create Tables
 # Base.metadata.create_all(engine)
@@ -59,7 +64,7 @@ def to_create_account():
 def login():
     username = request.form.get("username")
     password = request.form.get("password")
-    users = db.query(Users).all()
+    users = db.session.query(Users).all()
     for user in users:
         if user.username == username:
             if password == user.password:
@@ -75,11 +80,11 @@ def login():
 def create_account():
     username = request.form.get("username")
     password = request.form.get("password")
-    last_user = db.query(Users).order_by(Users.id.desc()).first()
+    last_user = db.session.query(Users).order_by(Users.id.desc()).first()
     user_id = last_user.id + 1
     user = Users(id=user_id, username=username, password=password)
-    db.add(user)
-    db.commit()
+    db.session.add(user)
+    db.session.commit()
     return render_template("login.html")
 
 
@@ -88,19 +93,41 @@ def create_account():
 def search():
     # get search results
     q = request.form.get("q")
-    results = (
-        db.query(Books)
-        .filter(
-            or_(
-                Books.title.like(f"%{q}%"), Books.author.like(f"%{q}%"), Books.isbn == q
+    page = request.form.get("page")
+    print(page)
+    # If page button is used
+    if page != None:
+        print("none")
+        results = (
+            Books.query.order_by(Books.title)
+            .filter(
+                or_(
+                    Books.title.ilike(f"%{q}%"),
+                    Books.author.ilike(f"%{q}%"),
+                    Books.isbn == q,
+                )
             )
+            .paginate(page=int(page), per_page=100, error_out=False, max_per_page=100)
         )
-        .all()
-    )
+    # For first search
+    else:
+        print("some")
+        results = (
+            Books.query.order_by(Books.title)
+            .filter(
+                or_(
+                    Books.title.ilike(f"%{q}%"),
+                    Books.author.ilike(f"%{q}%"),
+                    Books.isbn == q,
+                )
+            )
+            .paginate(page=1, per_page=100, error_out=False, max_per_page=100)
+        )
 
-    # print(results)
-    if len(results) >= 1:
-        return render_template("results.html", results=results)
+    if len(results.items) >= 1:
+        return render_template(
+            "results.html", results=results.items, pages=results.pages, q=q, page=page
+        )
     else:
         return "No results found."
 
@@ -109,7 +136,7 @@ def search():
 @app.route("/books/<isbn>", methods=["get", "post"])
 def books(isbn):
     # get book info from database
-    book_info = db.query(Books).filter(Books.isbn == isbn).one()
+    book_info = Books.query.filter(Books.isbn == isbn).one()
 
     # get Goodreads book info
     goodreads_info = requests.get(
@@ -121,7 +148,7 @@ def books(isbn):
 
     # get reviews from database
     reviews = (
-        db.query(Reviews, Users)
+        db.session.query(Reviews, Users)
         .filter(and_(Reviews.isbn == isbn, Reviews.user_id == Users.id))
         .all()
     )
@@ -141,19 +168,19 @@ def review():
     content = request.form.get("content")
     isbn = request.form.get("isbn")
     rating = request.form.get("rating")
-    last_review = db.query(Reviews).order_by(Reviews.id.desc()).first()
+    last_review = db.session.query(Reviews).order_by(Reviews.id.desc()).first()
 
     # Checks if user has review already
     if (
         len(
-            db.query(Reviews)
+            db.session.query(Reviews)
             .filter(and_(Reviews.user_id == session["user_id"], Reviews.isbn == isbn))
             .all()
         )
         > 0
     ):
         print(
-            db.query(Reviews)
+            db.session.query(Reviews)
             .filter(and_(Reviews.user_id == session["user_id"], Reviews.isbn == isbn))
             .all()
         )
@@ -174,16 +201,16 @@ def review():
         )
 
     # Add review to database
-    db.add(review)
-    db.commit()
+    db.session.add(review)
+    db.session.commit()
     return redirect(url_for("books", isbn=isbn))
 
 
 @app.route("/api/<isbn>", methods=["get"])
 def api(isbn):
     # Get book and review information
-    book_info = db.query(Books).filter(Books.isbn == isbn).one()
-    reviews_info = db.query(Reviews).filter(Reviews.isbn == isbn).all()
+    book_info = db.session.query(Books).filter(Books.isbn == isbn).one()
+    reviews_info = db.session.query(Reviews).filter(Reviews.isbn == isbn).all()
 
     # if no reviews have been made
     if len(reviews_info) < 1:
